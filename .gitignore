@@ -50,3 +50,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+/MDK-ARM/
+!/MDK-ARM/InHub_Sub.uvoptx
+!/MDK-ARM/InHub_Sub.uvprojx
+!/MDK-ARM/startup_stm32l010x4.s
