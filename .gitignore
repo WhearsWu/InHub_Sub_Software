@@ -52,7 +52,7 @@ Mkfile.old
 dkms.conf
 
 /MDK-ARM/
-!/MDK-ARM/*.uvoptx
-!/MDK-ARM/*.uvprojx
-!/MDK-ARM/*.s
+!*.uvoptx
+!*.uvprojx
+!*.s
 
