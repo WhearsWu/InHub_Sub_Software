@@ -82,14 +82,34 @@ void nRF24L01_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
 //***************************************************************************************************/
 void nRF24L01_Write_Reg(uint8_t reg, uint8_t value)
 {
-    nRF24L01_Write_Buf(reg, &value, 1);
+    //nRF24L01_Write_Buf(reg, &value, 1);
+    nRF24L01_CSN_LOW();            //SPI使能       
+    
+	nRF24L01_SendCammand(NRF24L01_WRITE_REG + reg);
+
+    nRF24L01_SendValue(&value);
+
+
+	nRF24L01_CSN_HIGH();           //关闭SPI
+    nRF24L01_Updata_State();
+    
 }
 
 
 uint8_t nRF24L01_Read_Reg(uint8_t reg)
 {    
     uint8_t read;
-    nRF24L01_Read_Buf(reg, &read, 1);
+    //nRF24L01_Read_Buf(reg, &read, 1);
+    nRF24L01_CSN_LOW();            //SPI使能       
+    
+	nRF24L01_SendCammand(NRF24L01_WRITE_REG + reg);
+
+    nRF24L01_GetdValue(&read);
+
+	nRF24L01_CSN_HIGH();           //关闭SPI
+    
+    nRF24L01_Updata_State();
+    
     return read;
 }
 
