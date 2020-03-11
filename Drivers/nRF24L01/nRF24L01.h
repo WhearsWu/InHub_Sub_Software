@@ -41,6 +41,13 @@
 #define NOP             0xFF  	// 
 //*************************************SPI(nRF24L01)寄存器地址****************************************************
 #define CONFIG          0x00  // 配置收发状态，CRC校验模式以及收发状态响应方式
+    #define PRIM_RX     0x01
+    #define PWR_UP      0x02
+    #define CRCO        0x04
+    #define EN_CRC      0x08
+    #define MASK_MAX_RT 0x10
+    #define MASK_TX_DS  0x20
+    #define MASK_RX_DR  0x40
 #define EN_AA           0x01  // 自动应答功能设置
 #define EN_RXADDR       0x02  // 可用信道设置
 #define SETUP_AW        0x03  // 收发地址宽度设置

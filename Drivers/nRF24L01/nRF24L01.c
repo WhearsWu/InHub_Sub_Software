@@ -14,6 +14,13 @@ void nRF24L01_SendCammand(uint8_t cmd)
     _SPI_ReadWrite(&cmd,&nRF24L01_State);
 }
 
+void nRF24L01_Updata_State()
+{
+    nRF24L01_CSN_LOW();
+    nRF24L01_SendCammand(NOP);
+    nRF24L01_CSN_HIGH();
+}
+
 void nRF24L01_SendValue(uint8_t* val)
 {
     _SPI_ReadWrite(val,&ignore);
@@ -52,6 +59,7 @@ void nRF24L01_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
 
 
 	nRF24L01_CSN_HIGH();           //关闭SPI
+    nRF24L01_Updata_State();
 }
 //***************************************************************************************************/
 //函数：uint8_t _SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
@@ -66,7 +74,7 @@ void nRF24L01_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
     nRF24L01_Muti_Get( pBuf,uint8_ts);
     
 	nRF24L01_CSN_HIGH();                           
-	
+	nRF24L01_Updata_State();
 }
 
 //***************************************************************************************************/
@@ -86,13 +94,6 @@ uint8_t nRF24L01_Read_Reg(uint8_t reg)
 }
 
 
-void nRF24L01_Updata_State()
-{
-    nRF24L01_CSN_LOW();
-    nRF24L01_SendCammand(NOP);
-    nRF24L01_CSN_HIGH();
-}
-
 
 void nRF24L01_RxPacket(uint8_t *pBuf)
 {
@@ -109,15 +110,19 @@ void nRF24L01_RxPacket(uint8_t *pBuf)
 
 void nRF24L01_TxPacket(uint8_t *pBuf,uint8_t NoB)
 {
+//    uint8_t RegVal;
     
     nRF24L01_CSN_LOW();                    		// Set CSN low, init SPI tranaction
 	nRF24L01_SendCammand(WR_TX_PLOAD);      		// Select register to write to and read status uint8_t
 
 	nRF24L01_Muti_Send( pBuf,NoB);
+        
+	nRF24L01_CSN_HIGH();
+    
+    //RegVal = nRF24L01_Read_Reg(CONFIG);
     
     nRF24L01_Write_Reg(CONFIG, 0x0e);
     
-	nRF24L01_CSN_HIGH();
     _Delay(1);
 }
 
@@ -156,49 +161,6 @@ void nRF24L01_SetRX(void)
 	nRF24L01_CE_HIGH(); 
 	_Delay(4);
 }
-
-//*****************************************************************************************************/
-//函数：unsigned char nRF24L01_RxPacket(unsigned char* rx_buf)
-//功能：数据读取后放如rx_buf接收缓冲区中
-//*****************************************************************************************************/
-//unsigned char nRF24L01_RxPacket(unsigned char* rx_buf)
-//{
-//    unsigned char revale=0;
-
-//	//nRF24L01_State = nRF24L01_Read_Reg(STATUS);	// 读取状态寄存其来判断数据接收状况
-////	if(nRF24L01_State|RX_DR)				// 判断是否接收到数据
-////	{
-//	    nRF24L01_CE_LOW(); 			//SPI使能
-//    
-//    
-//		nRF24L01_Read_Buf(rx_buf,TX_PLOAD_WIDTH);// read receive payload from RX_FIFO buffer
-//    
-//    
-//		revale =1;			//读取数据完成标志
-////	}
-////	nRF24L01_Write_Reg(NRF24L01_WRITE_REG+STATUS,nRF24L01_State);   //接收到数据后RX_DR,TX_DS,MAX_PT都置高为1，通过写1来清楚中断标志
-//	return revale;
-//}
-//**********************************************************************************************************
-//函数：void nRF24L01_TxPacket(unsigned char * tx_buf)
-//功能：发送 tx_buf中数据
-//*********************************************************************************************************/
-//void nRF24L01_TxPacket(unsigned char * tx_buf)
-//{
-//	nRF24L01_CE_LOW();			//StandBy I模式	
-//	nRF24L01_Write_Buf(RX_ADDR_P0, TX_ADDRESS, TX_ADR_WIDTH); // 装载接收端地址
-//    
-//    
-//	nRF24L01_Write_Buf(WR_TX_PLOAD, tx_buf, TX_PLOAD_WIDTH); 			 // 装载数据	
-//    
-//    
-//    
-//	nRF24L01_Write_Reg(CONFIG, 0x0e);   		 // IRQ收发完成中断响应，16位CRC，主发送
-//	nRF24L01_CE_HIGH();		 //置高CE，激发数据发送
-//	//_Delay(1);
-//}
-
-
 
 void EXTI0_1_IRQHandler(void)
 {
