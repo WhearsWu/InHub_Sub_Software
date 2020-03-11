@@ -14,6 +14,8 @@
 #define         nRF24L01_CSN_HIGH()             HAL_GPIO_WritePin(nRF24L01_CSN_GPIO_Port, nRF24L01_CSN_Pin, GPIO_PIN_SET)
 #define         nRF24L01_CE_LOW()               HAL_GPIO_WritePin(nRF24L01_CE_GPIO_Port, nRF24L01_CE_Pin, GPIO_PIN_RESET)
 #define         nRF24L01_CE_HIGH()              HAL_GPIO_WritePin(nRF24L01_CE_GPIO_Port, nRF24L01_CE_Pin, GPIO_PIN_SET)
+
+#define         _nRF24L01_IRQHandler              EXTI0_1_IRQHandler
 /******************************* Configure *********************************/
 
 
@@ -55,6 +57,11 @@
 #define RF_CH           0x05  // 工作频率设置
 #define RF_SETUP        0x06  // 发射速率、功耗功能设置
 #define STATUS          0x07  // 状态寄存器
+    #define TX_FULL     0x01
+    #define RX_P_NO     0x0e
+    #define MAX_RT      0x10
+    #define TX_DS       0x20
+    #define RX_DR       0x40
 #define OBSERVE_TX      0x08  // 发送监测功能
 #define CD              0x09  // 地址检测           
 #define RX_ADDR_P0      0x0A  // 频道0接收数据地址
@@ -72,11 +79,18 @@
 #define RX_PW_P5        0x16  // 接收频道0接收数据长度
 #define FIFO_STATUS     0x17  // FIFO栈入栈出状态寄存器设置
 //**************************************************************************************
-#define RX_DR           0x40
-#define TX_DS           0x20
-#define MAX_RT          0X10
-#define RX_P_NO         0X0E
-#define TX_FULL         0X01
+
+
+//typedef struct
+//{
+//    uint8_t TX_FULL;
+//    uint8_t RX_P_NO;
+//    uint8_t MAX_RT;
+//    uint8_t TX_DS;
+//    uint8_t RX_DR;
+//    
+//} nRF24L01_StatusTypDef;
+
 
 
 extern uint8_t nRF24L01_State;
@@ -89,7 +103,7 @@ void nRF24L01_SetRX(void);
 
 void nRF24L01_RxPacket(uint8_t *pBuf);
 void nRF24L01_TxPacket(uint8_t *pBuf,uint8_t NoB);
-
+void nRF24L01_Flush_TX(void);
 
 
 

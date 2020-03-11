@@ -2,13 +2,13 @@
 
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]= {0x34,0x43,0x10,0x10,0x01};	//本地地址
 uint8_t RX_ADDRESS[RX_ADR_WIDTH]= {0x34,0x43,0x10,0x10,0x01};	//接收地址
-
-
+uint8_t nRF24L01_RXBuffer[RX_PLOAD_WIDTH];
+uint8_t nRF24L01_TXBuffer[RX_PLOAD_WIDTH];
 
 uint8_t nRF24L01_State;
 uint8_t ignore;
 
-
+//*****************************************************************************************************
 void nRF24L01_SendCammand(uint8_t cmd)
 {
     _SPI_ReadWrite(&cmd,&nRF24L01_State);
@@ -46,9 +46,7 @@ void nRF24L01_Muti_Get(uint8_t* pBuf, uint8_t times)
 }
 
 //********************************************************************************************************
-//函数：uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
-//功能: 用于写数据：为寄存器地址，pBuf：为待写入数据地址，uint8_ts：写入数据的个数
-//********************************************************************************************************/
+
 void nRF24L01_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
 {
 	nRF24L01_CSN_LOW();            //SPI使能       
@@ -61,10 +59,7 @@ void nRF24L01_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
 	nRF24L01_CSN_HIGH();           //关闭SPI
     nRF24L01_Updata_State();
 }
-//***************************************************************************************************/
-//函数：uint8_t _SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
-//功能: 用于读数据，reg：为寄存器地址，pBuf：为待读出数据地址，uint8_ts：读出数据的个数
-//***************************************************************************************************/
+
 void nRF24L01_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
 {
 	nRF24L01_CSN_LOW();                    		// Set CSN low, init SPI tranaction
@@ -77,9 +72,7 @@ void nRF24L01_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
 	nRF24L01_Updata_State();
 }
 
-//***************************************************************************************************/
-//功能：NRF24L01读写寄存器函数
-//***************************************************************************************************/
+
 void nRF24L01_Write_Reg(uint8_t reg, uint8_t value)
 {
     //nRF24L01_Write_Buf(reg, &value, 1);
@@ -143,16 +136,28 @@ void nRF24L01_TxPacket(uint8_t *pBuf,uint8_t NoB)
     
     nRF24L01_Write_Reg(CONFIG, 0x0e);
     
+    nRF24L01_CE_HIGH();    
     _Delay(1);
+    nRF24L01_CE_LOW();
 }
 
+void nRF24L01_SetRX(void)
+{
+	nRF24L01_CE_LOW();
+	nRF24L01_Write_Reg(CONFIG, 0x0f);   		// IRQ收发完成中断响应，16位CRC	，主接收
+	//nRF24L01_CE_HIGH(); 
+	_Delay(1);
+}
 
+void nRF24L01_Flush_TX(void)
+{
+    nRF24L01_CSN_LOW();
+    nRF24L01_SendCammand(FLUSH_TX);
+    nRF24L01_CSN_HIGH();
+}
 
+//********************************************************************************************************
 
-
-///***************************************************************************************
-//NRF24L01初始化
-///**************************************************************************************/
 void nRF24L01_Init(void)
 {
     _Delay(3);
@@ -168,24 +173,31 @@ void nRF24L01_Init(void)
 	nRF24L01_Write_Reg(RF_SETUP, 0x07);   		//设置发射速率为1MHZ，发射功率为最大值0d    
 }
 
-
-
-//***************************************************************************************************/
-//函数：void SetRX_Mode(void)
-//功能：数据接收配置 
-//***************************************************************************************************/
-void nRF24L01_SetRX(void)
-{
-	nRF24L01_CE_LOW();
-	nRF24L01_Write_Reg(CONFIG, 0x0f);   		// IRQ收发完成中断响应，16位CRC	，主接收
-	nRF24L01_CE_HIGH(); 
-	_Delay(4);
-}
-
-void EXTI0_1_IRQHandler(void)
+void _nRF24L01_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(nRF24L01_IRQ_Pin);
-    //nRF24L01_Updata_State();
-    nRF24L01_SetRX();
-    nRF24L01_Write_Reg(STATUS,nRF24L01_State); 
+    nRF24L01_Updata_State();
+    switch (nRF24L01_State&(~RX_P_NO))
+    {
+        case RX_DR:
+            nRF24L01_RxPacket(nRF24L01_RXBuffer);
+            
+        break;
+        
+        case TX_DS:
+            
+        break;
+        
+        case MAX_RT:
+            
+        break;
+        
+        
+        case TX_FULL:
+            nRF24L01_Flush_TX();
+        break;
+   
+    }
+    
+    nRF24L01_Write_Reg(STATUS,nRF24L01_State&(~RX_P_NO)); 
 }
