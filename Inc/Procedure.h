@@ -6,11 +6,6 @@
 #include "RTime.h"
 
 
-typedef struct
-{
-    RTimt_Typedef Time;
-    uint8_t Battery;
-} Packet_TypeDef;
 
 
 void Procedure(void);

@@ -110,13 +110,13 @@ void RTC_IRQHandler(void)
   /* USER CODE END RTC_IRQn 1 */
 }
 
-void RTC_CalendarConfig(uint8_t year,uint8_t month,uint8_t date,uint8_t hour,uint8_t minute,uint8_t second)
+void RTC_CalendarConfig(uint16_t year,uint8_t month,uint8_t date,uint8_t hour,uint8_t minute,uint8_t second)
 {
     RTC_DateTypeDef sdatestructure;
     RTC_TimeTypeDef stimestructure;
 
 
-    sdatestructure.Year = (uint16_t)(year|0x2000);
+    sdatestructure.Year = year;
     sdatestructure.Month = month;
     sdatestructure.Date = date;
     //sdatestructure.WeekDay = RTC_WEEKDAY_MONDAY;
@@ -148,7 +148,7 @@ void RTC_CalendarConfig(uint8_t year,uint8_t month,uint8_t date,uint8_t hour,uin
     HAL_RTCEx_BKUPWrite(&hrtc,RTC_BKP_DR0,0x32F2);  
 }\
 
-void RTC_CalendarShow(uint8_t* year,uint8_t* month,uint8_t* date,uint8_t* hour,uint8_t* minute,uint8_t* second)
+void RTC_CalendarShow(uint16_t* year,uint8_t* month,uint8_t* date,uint8_t* hour,uint8_t* minute,uint8_t* second)
 {
     RTC_DateTypeDef sdatestructureget;
     RTC_TimeTypeDef stimestructureget;
@@ -162,7 +162,7 @@ void RTC_CalendarShow(uint8_t* year,uint8_t* month,uint8_t* date,uint8_t* hour,u
 
     /* Get the RTC current Date */
     HAL_RTC_GetDate(&hrtc, &sdatestructureget, RTC_FORMAT_BCD);
-    *year = (uint8_t)(sdatestructureget.Year&0xff);
+    *year = sdatestructureget.Year;
     *month = sdatestructureget.Month;
     *date= sdatestructureget.Date; 
     /* Display time Format : hh:mm:ss */
