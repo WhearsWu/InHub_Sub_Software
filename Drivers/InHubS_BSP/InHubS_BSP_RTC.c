@@ -110,6 +110,11 @@ void RTC_IRQHandler(void)
   /* USER CODE END RTC_IRQn 1 */
 }
 
+void RTC_WakeUp_Reset(void)
+{
+    HAL_RTCEx_BKUPWrite(&hrtc,RTC_BKP_DR0,0x32F2);
+}
+
 void RTC_CalendarConfig(uint16_t year,uint8_t month,uint8_t date,uint8_t hour,uint8_t minute,uint8_t second)
 {
     RTC_DateTypeDef sdatestructure;
@@ -146,7 +151,7 @@ void RTC_CalendarConfig(uint16_t year,uint8_t month,uint8_t date,uint8_t hour,ui
 
     /*##-3- Writes a data in a RTC Backup data Register0 #######################*/
     HAL_RTCEx_BKUPWrite(&hrtc,RTC_BKP_DR0,0x32F2);  
-}\
+}
 
 void RTC_CalendarShow(uint16_t* year,uint8_t* month,uint8_t* date,uint8_t* hour,uint8_t* minute,uint8_t* second)
 {

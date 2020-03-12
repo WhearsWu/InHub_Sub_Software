@@ -79,8 +79,8 @@
 #define RX_PW_P5        0x16  // 接收频道0接收数据长度
 #define FIFO_STATUS     0x17  // FIFO栈入栈出状态寄存器设置
 //**************************************************************************************
-
-
+#define nRF24L01_TX_DS                (nRF24L01_State&TX_DS)
+#define nRG24L01_RX_DR                (nRF24L01_State&RX_DR)
 //typedef struct
 //{
 //    uint8_t TX_FULL;
@@ -94,16 +94,18 @@
 
 
 extern uint8_t nRF24L01_State;
-
+extern uint8_t nRF24L01_RXBuffer[RX_PLOAD_WIDTH];
+extern uint8_t nRF24L01_TXBuffer[RX_PLOAD_WIDTH];
 
 
 void nRF24L01_Init(void);
 
 void nRF24L01_SetRX(void);
-
+void nRF24L01_SetTX(void);
 void nRF24L01_RxPacket(uint8_t *pBuf);
 void nRF24L01_TxPacket(uint8_t *pBuf,uint8_t NoB);
 void nRF24L01_Flush_TX(void);
+void nRF24L01_Flush_RX(void);
 
 
 

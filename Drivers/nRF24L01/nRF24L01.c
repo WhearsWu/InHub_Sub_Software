@@ -3,7 +3,7 @@
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]= {0x34,0x43,0x10,0x10,0x01};	//本地地址
 uint8_t RX_ADDRESS[RX_ADR_WIDTH]= {0x34,0x43,0x10,0x10,0x01};	//接收地址
 uint8_t nRF24L01_RXBuffer[RX_PLOAD_WIDTH];
-uint8_t nRF24L01_TXBuffer[RX_PLOAD_WIDTH];
+uint8_t nRF24L01_TXBuffer[TX_PLOAD_WIDTH];
 
 uint8_t nRF24L01_State;
 uint8_t ignore;
@@ -35,12 +35,14 @@ void nRF24L01_GetdValue(uint8_t* buf)
 void nRF24L01_Muti_Send(uint8_t* pBuf, uint8_t times)   
 {
     uint8_t Send_counter;
+
     for(Send_counter=0; Send_counter!=times; Send_counter++) //
 		nRF24L01_SendValue(pBuf+Send_counter);
 }
 void nRF24L01_Muti_Get(uint8_t* pBuf, uint8_t times)   
 {
     uint8_t Get_counter;
+
     for(Get_counter=0; Get_counter!=times; Get_counter++) //
 		nRF24L01_GetdValue(pBuf+Get_counter);
 }
@@ -124,7 +126,8 @@ void nRF24L01_RxPacket(uint8_t *pBuf)
 void nRF24L01_TxPacket(uint8_t *pBuf,uint8_t NoB)
 {
 //    uint8_t RegVal;
-    
+   if(NoB>=TX_PLOAD_WIDTH)
+        NoB = TX_PLOAD_WIDTH;
     nRF24L01_CSN_LOW();                    		// Set CSN low, init SPI tranaction
 	nRF24L01_SendCammand(WR_TX_PLOAD);      		// Select register to write to and read status uint8_t
 
@@ -143,8 +146,22 @@ void nRF24L01_TxPacket(uint8_t *pBuf,uint8_t NoB)
 
 void nRF24L01_SetRX(void)
 {
+	uint8_t ConReg;
+    ConReg = nRF24L01_Read_Reg(CONFIG);
+    ConReg &= ~PRIM_RX;
+    ConReg |= PRIM_RX;
+    nRF24L01_CE_LOW();
+	nRF24L01_Write_Reg(CONFIG, 0x0f);   		
+	//nRF24L01_CE_HIGH(); 
+	_Delay(1);
+}
+void nRF24L01_SetTX(void)
+{
+    uint8_t ConReg;
+    ConReg = nRF24L01_Read_Reg(CONFIG);
+    ConReg &= ~PRIM_RX;
 	nRF24L01_CE_LOW();
-	nRF24L01_Write_Reg(CONFIG, 0x0f);   		// IRQ收发完成中断响应，16位CRC	，主接收
+	nRF24L01_Write_Reg(CONFIG, ConReg);   		
 	//nRF24L01_CE_HIGH(); 
 	_Delay(1);
 }
@@ -155,7 +172,12 @@ void nRF24L01_Flush_TX(void)
     nRF24L01_SendCammand(FLUSH_TX);
     nRF24L01_CSN_HIGH();
 }
-
+void nRF24L01_Flush_RX(void)
+{
+    nRF24L01_CSN_LOW();
+    nRF24L01_SendCammand(FLUSH_RX);
+    nRF24L01_CSN_HIGH();
+}
 //********************************************************************************************************
 
 void nRF24L01_Init(void)
@@ -165,12 +187,12 @@ void nRF24L01_Init(void)
  	nRF24L01_CSN_HIGH();   // Spi  disable 
 	nRF24L01_Write_Buf(TX_ADDR, TX_ADDRESS, TX_ADR_WIDTH);    // 写本地地址	
 	nRF24L01_Write_Buf(RX_ADDR_P0, RX_ADDRESS, RX_ADR_WIDTH); // 写接收端地址
-    //nRF24L01_Write_Reg(CONFIG, 0x08);
 	nRF24L01_Write_Reg(EN_AA, 0x01);      //  频道0自动	ACK应答允许	
 	nRF24L01_Write_Reg(EN_RXADDR, 0x01);  //  允许接收地址只有频道0，如果需要多频道可以参考Page21  
 	nRF24L01_Write_Reg(RF_CH, 0);        //   设置信道工作为2.4GHZ，收发必须一致
 	nRF24L01_Write_Reg(RX_PW_P0, RX_PLOAD_WIDTH); //设置接收数据长度，本次设置为32字节
-	nRF24L01_Write_Reg(RF_SETUP, 0x07);   		//设置发射速率为1MHZ，发射功率为最大值0d    
+	nRF24L01_Write_Reg(RF_SETUP, 0x07);   		//设置发射速率为1MHZ，发射功率为最大值0d
+    nRF24L01_Write_Reg(CONFIG, 0x0e);
 }
 
 void _nRF24L01_IRQHandler(void)

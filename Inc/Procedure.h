@@ -6,7 +6,7 @@
 #include "RTime.h"
 
 
-
+#define TimeSync 0x46
 
 void Procedure(void);
 
