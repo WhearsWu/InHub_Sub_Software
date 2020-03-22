@@ -44,11 +44,11 @@ void nRF24L01_SPIx_Init(void)
   * @param  ReadSize Number of bytes to read (max 4 bytes)
   * @retval Value read on the SPI
   */
-uint8_t nRF24L01_SPIx_ReadWrite(uint8_t* TValue,uint8_t* RValue)
+uint8_t nRF24L01_SPIx_ReadWrite(uint8_t* TValue,uint8_t* RValue,uint8_t NOB)
 {
   HAL_StatusTypeDef status = HAL_OK;
   
-  status = HAL_SPI_TransmitReceive(&SpiHandle,  TValue, RValue, 1, SPIx_TIMEOUT_MAX);
+  status = HAL_SPI_TransmitReceive(&SpiHandle,  TValue, RValue, NOB, SPIx_TIMEOUT_MAX);
 
   /* Check the communication status */
   if(status != HAL_OK)
@@ -60,6 +60,13 @@ uint8_t nRF24L01_SPIx_ReadWrite(uint8_t* TValue,uint8_t* RValue)
 
   return 0x01;
 }
+
+
+
+
+
+
+
 
 /**
   * @brief  SPI Write a byte to device.
@@ -212,7 +219,7 @@ void nRF24L01_GPIO_Init(void)
 }
 void nRF24L01_EXTI_Init(void)
 {
-    HAL_NVIC_SetPriority(EXTI0_1_IRQn, 3, 0);
+    HAL_NVIC_SetPriority(EXTI0_1_IRQn, 1, 0);
     HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
 }
 

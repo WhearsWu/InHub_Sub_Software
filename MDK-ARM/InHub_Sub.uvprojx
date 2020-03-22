@@ -410,7 +410,7 @@
             <File>
               <FileName>Procedure.c</FileName>
               <FileType>1</FileType>
-              <FilePath>W:\WZC\Project\InHub\InHub_Sub\Src\Procedure.c</FilePath>
+              <FilePath>../Src/Procedure.c</FilePath>
             </File>
           </Files>
         </Group>

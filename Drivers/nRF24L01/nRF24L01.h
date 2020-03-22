@@ -8,7 +8,11 @@
 #include "InHubS_BSP_nRF24L01.h"
 
 #define         _Delay(s)                       HAL_Delay(s)
-#define         _SPI_ReadWrite(Tchar,Rchar)       nRF24L01_SPIx_ReadWrite((uint8_t*)Tchar,(uint8_t*)Rchar)
+#define         _SPI_ReadWrite(Tchar,Rchar,NOB)       nRF24L01_SPIx_ReadWrite((uint8_t*)Tchar,(uint8_t*)Rchar,1)
+//#defien         _nRF24L01_Muti_Send(s,t)          nRF24L01_SPIx_ReadWrite(s,,t)    
+//#define         _nRF24L01_Muti_Get(g,t)            nRF24L01_SPIx_ReadWrite(,g,t)
+
+
 //#define         _SPI_Read()                   SPIx_Read()
 #define         nRF24L01_CSN_LOW()              HAL_GPIO_WritePin(nRF24L01_CSN_GPIO_Port, nRF24L01_CSN_Pin, GPIO_PIN_RESET)
 #define         nRF24L01_CSN_HIGH()             HAL_GPIO_WritePin(nRF24L01_CSN_GPIO_Port, nRF24L01_CSN_Pin, GPIO_PIN_SET)

@@ -27,7 +27,7 @@
 
 
 //void                    nRF24L01_SPIx_Init(void);
-uint8_t                   nRF24L01_SPIx_ReadWrite(uint8_t* TValue,uint8_t* RValue);
+uint8_t                     nRF24L01_SPIx_ReadWrite(uint8_t* TValue,uint8_t* RValue,uint8_t NOB);
 //static uint32_t          SPIx_Read(void);
 void                      nRF24L01_Resource_Init(void);
 //void                    nRF24L01_GPIO_Init(void);

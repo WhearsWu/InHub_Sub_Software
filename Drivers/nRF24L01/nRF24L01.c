@@ -11,7 +11,7 @@ uint8_t ignore;
 //*****************************************************************************************************
 void nRF24L01_SendCammand(uint8_t cmd)
 {
-    _SPI_ReadWrite(&cmd,&nRF24L01_State);
+    _SPI_ReadWrite(&cmd,&nRF24L01_State,1);
 }
 
 void nRF24L01_Updata_State()
@@ -23,28 +23,22 @@ void nRF24L01_Updata_State()
 
 void nRF24L01_SendValue(uint8_t* val)
 {
-    _SPI_ReadWrite(val,&ignore);
+    _SPI_ReadWrite(val,&ignore,1);
 }
 void nRF24L01_GetdValue(uint8_t* buf)
 {
     static uint8_t nop=NOP;
     
-    _SPI_ReadWrite(&nop,buf);
+    _SPI_ReadWrite(&nop,buf,1);
 
 }
-void nRF24L01_Muti_Send(uint8_t* pBuf, uint8_t times)   
+void _nRF24L01_Muti_Send(uint8_t* pBuf, uint8_t times)   
 {
-    uint8_t Send_counter;
-
-    for(Send_counter=0; Send_counter!=times; Send_counter++) //
-		nRF24L01_SendValue(pBuf+Send_counter);
+    _SPI_ReadWrite(pBuf,&ignore,times);
 }
-void nRF24L01_Muti_Get(uint8_t* pBuf, uint8_t times)   
+void _nRF24L01_Muti_Get(uint8_t* pBuf, uint8_t times)   
 {
-    uint8_t Get_counter;
-
-    for(Get_counter=0; Get_counter!=times; Get_counter++) //
-		nRF24L01_GetdValue(pBuf+Get_counter);
+    _SPI_ReadWrite(NOP,pBuf,times);
 }
 
 //********************************************************************************************************
@@ -55,7 +49,7 @@ void nRF24L01_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
     
 	nRF24L01_SendCammand(NRF24L01_WRITE_REG + reg);
 
-    nRF24L01_Muti_Send(pBuf, uint8_ts);
+    _nRF24L01_Muti_Send(pBuf, uint8_ts);
 
 
 	nRF24L01_CSN_HIGH();           //关闭SPI
@@ -68,7 +62,7 @@ void nRF24L01_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t uint8_ts)
     
 	nRF24L01_SendCammand(NRF24L01_READ_REG + reg);      		// Select register to write to and read status uint8_t
 
-    nRF24L01_Muti_Get( pBuf,uint8_ts);
+    _nRF24L01_Muti_Send( pBuf,uint8_ts);
     
 	nRF24L01_CSN_HIGH();                           
 	nRF24L01_Updata_State();
@@ -118,7 +112,7 @@ void nRF24L01_RxPacket(uint8_t *pBuf)
     nRF24L01_CSN_LOW();                    		// Set CSN low, init SPI tranaction
 	nRF24L01_SendCammand(RD_RX_PLOAD);      		// Select register to write to and read status uint8_t
 
-	nRF24L01_Muti_Get( pBuf,NoB);
+	_nRF24L01_Muti_Send( pBuf,NoB);
     
 	nRF24L01_CSN_HIGH();
 }
@@ -131,7 +125,7 @@ void nRF24L01_TxPacket(uint8_t *pBuf,uint8_t NoB)
     nRF24L01_CSN_LOW();                    		// Set CSN low, init SPI tranaction
 	nRF24L01_SendCammand(WR_TX_PLOAD);      		// Select register to write to and read status uint8_t
 
-	nRF24L01_Muti_Send( pBuf,NoB);
+	_nRF24L01_Muti_Send( pBuf,NoB);
         
 	nRF24L01_CSN_HIGH();
     
@@ -140,8 +134,8 @@ void nRF24L01_TxPacket(uint8_t *pBuf,uint8_t NoB)
     nRF24L01_Write_Reg(CONFIG, 0x0e);
     
     nRF24L01_CE_HIGH();    
-    _Delay(1);
-    nRF24L01_CE_LOW();
+//    _Delay(1);
+//    nRF24L01_CE_LOW();
 }
 
 void nRF24L01_SetRX(void)
@@ -194,32 +188,36 @@ void nRF24L01_Init(void)
 	nRF24L01_Write_Reg(RF_SETUP, 0x07);   		//设置发射速率为1MHZ，发射功率为最大值0d
     nRF24L01_Write_Reg(CONFIG, 0x0e);
 }
-
+uint8_t test;
 void _nRF24L01_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(nRF24L01_IRQ_Pin);
     nRF24L01_Updata_State();
-    switch (nRF24L01_State&(~RX_P_NO))
-    {
-        case RX_DR:
-            nRF24L01_RxPacket(nRF24L01_RXBuffer);
-            
-        break;
-        
-        case TX_DS:
-            
-        break;
-        
-        case MAX_RT:
-            
-        break;
-        
-        
-        case TX_FULL:
-            nRF24L01_Flush_TX();
-        break;
-   
-    }
+    test = nRF24L01_State&(~RX_P_NO);
+//    switch (test)
+//    {
+//        case RX_DR:
+//            nRF24L01_RxPacket(nRF24L01_RXBuffer);
+//            
+//        break;
+//        
+//        case TX_DS:
+//            
+//        break;
+//        
+//        case MAX_RT:
+//            
+//        break;
+//        
+//        
+//        case TX_FULL:
+//            nRF24L01_Flush_TX();
+//        break;
+//        
+//        default:
+//        break;
+//   
+//    }
     
-    nRF24L01_Write_Reg(STATUS,nRF24L01_State&(~RX_P_NO)); 
+    nRF24L01_Write_Reg(STATUS,test); 
 }
